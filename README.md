@@ -64,7 +64,7 @@ The app removes the editor token from the address bar after loading and keeps it
 
 ## Data model and security
 
-The Apps Script web app stores schedule exceptions in a `Schedule Overrides` tab that it creates automatically. Public visitors can read the effective schedule. Changes require the private editor token, and Apps Script validates:
+The Apps Script web app stores schedule exceptions in a `Schedule Overrides` tab that it creates automatically. Public visitors read the effective schedule through JSONP, avoiding Apps Script's cross-origin redirect limitations. Editor writes use a no-CORS post and are confirmed by re-reading the sheet before the UI reports success. Changes require the private editor token, and Apps Script validates:
 
 - Saturday-only dates
 - Known participant names

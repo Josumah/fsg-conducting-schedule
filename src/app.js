@@ -86,13 +86,7 @@ async function loadOverrides() {
     return;
   }
 
-  const response = await fetch(
-    `${SCHEDULE_API_URL}?action=list`,
-  );
-  if (!response.ok) {
-    throw new Error(`Shared schedule returned ${response.status}`);
-  }
-  const result = await response.json();
+  const result = await loadScheduleJsonp();
   if (!result.ok || !Array.isArray(result.overrides)) {
     throw new Error(result.error || "Shared schedule response is invalid");
   }
@@ -109,6 +103,34 @@ async function loadOverrides() {
       ? `Shared schedule loaded with ${overrides.length} update${overrides.length === 1 ? "" : "s"}.`
       : "Shared schedule is up to date.",
   );
+}
+
+function loadScheduleJsonp() {
+  return new Promise((resolve, reject) => {
+    const callbackName = `__fsgScheduleCallback${Date.now()}`;
+    const script = document.createElement("script");
+    const timeout = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Shared schedule timed out"));
+    }, 10000);
+
+    function cleanup() {
+      window.clearTimeout(timeout);
+      delete window[callbackName];
+      script.remove();
+    }
+
+    window[callbackName] = (result) => {
+      cleanup();
+      resolve(result);
+    };
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Shared schedule could not be loaded"));
+    };
+    script.src = `${SCHEDULE_API_URL}?action=list&callback=${callbackName}`;
+    document.head.append(script);
+  });
 }
 
 function assignmentClass(person) {
@@ -197,17 +219,12 @@ async function saveOverride(payload, action = "save") {
   if (!isBackendConfigured()) {
     throw new Error("Shared editing is not configured yet.");
   }
-  const response = await fetch(SCHEDULE_API_URL, {
+  await fetch(SCHEDULE_API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8",
-    },
+    mode: "no-cors",
     body: JSON.stringify({ ...payload, action, editorToken }),
   });
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
-    throw new Error(body.error || `Unable to save change (${response.status})`);
-  }
+  await new Promise((resolve) => window.setTimeout(resolve, 800));
 }
 
 async function handleSave(event) {
@@ -225,6 +242,16 @@ async function handleSave(event) {
   try {
     await saveOverride(payload);
     await loadOverrides();
+    const saved = overrides.find((item) => item.date === payload.date);
+    if (
+      !saved ||
+      saved.kind !== payload.kind ||
+      saved.person !== payload.person ||
+      saved.reason !== payload.reason ||
+      saved.note !== payload.note
+    ) {
+      throw new Error("The shared schedule did not confirm this change.");
+    }
     renderCalendar();
     elements.dialog.close();
   } catch (error) {
@@ -237,6 +264,9 @@ async function handleReset() {
   try {
     await saveOverride({ date: elements.editDate.value }, "delete");
     await loadOverrides();
+    if (overrides.some((item) => item.date === elements.editDate.value)) {
+      throw new Error("The shared schedule did not confirm the reset.");
+    }
     renderCalendar();
     elements.dialog.close();
   } catch (error) {

@@ -9,11 +9,17 @@ const REASONS = new Set([
   "other",
 ]);
 
-function doGet() {
+function doGet(event) {
   try {
-    return jsonResponse({ ok: true, overrides: readOverrides() });
+    return jsonResponse(
+      { ok: true, overrides: readOverrides() },
+      event && event.parameter && event.parameter.callback,
+    );
   } catch (error) {
-    return jsonResponse({ ok: false, error: error.message });
+    return jsonResponse(
+      { ok: false, error: error.message },
+      event && event.parameter && event.parameter.callback,
+    );
   }
 }
 
@@ -142,7 +148,17 @@ function validateDate(date) {
   }
 }
 
-function jsonResponse(body) {
+function jsonResponse(body, callback) {
+  if (callback) {
+    if (!/^[A-Za-z_$][0-9A-Za-z_$]*$/.test(callback)) {
+      return ContentService
+        .createTextOutput("Invalid callback")
+        .setMimeType(ContentService.MimeType.TEXT);
+    }
+    return ContentService
+      .createTextOutput(`${callback}(${JSON.stringify(body)});`)
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
     .createTextOutput(JSON.stringify(body))
     .setMimeType(ContentService.MimeType.JSON);
