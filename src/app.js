@@ -141,7 +141,7 @@ function renderCalendar() {
   for (const dateKey of getSaturdaysInMonth(year, month)) {
     const entry = getScheduleEntry(dateKey, overrides);
     const date = parseDate(dateKey);
-    const canEdit = editorToken && entry.reason !== "kingdom_hall";
+    const canEdit = Boolean(editorToken);
     const item = document.createElement("li");
     item.className = "saturday-item";
     if (dateKey === todayKey()) item.classList.add("today");
@@ -181,8 +181,8 @@ function openEditor(dateKey) {
   elements.editPerson.value =
     override?.person ?? (entry.kind === "assignment" ? entry.person : PARTICIPANTS[0]);
   elements.editReason.value =
-    override?.reason && override.reason !== "kingdom_hall" ? override.reason : "convention";
-  elements.resetDate.hidden = entry.reason === "kingdom_hall" && !override;
+    override?.reason ?? (entry.kind === "skip" ? entry.reason : "convention");
+  elements.resetDate.hidden = !override;
   updateEditorFields();
   elements.dialog.showModal();
 }

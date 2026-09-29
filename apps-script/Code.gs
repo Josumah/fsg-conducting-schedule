@@ -1,7 +1,13 @@
 const SHEET_NAME = "Schedule Overrides";
 const HEADERS = ["Date", "Kind", "Person", "Reason", "Note", "UpdatedAt"];
 const PARTICIPANTS = new Set(["James", "Les", "Harlan", "JP", "Isaac"]);
-const REASONS = new Set(["convention", "assembly", "co_visit", "other"]);
+const REASONS = new Set([
+  "kingdom_hall",
+  "convention",
+  "assembly",
+  "co_visit",
+  "other",
+]);
 
 function doGet() {
   try {

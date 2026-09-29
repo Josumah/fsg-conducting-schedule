@@ -50,6 +50,11 @@ function isManualSkip(override) {
   return override?.kind === "skip";
 }
 
+function isConductingSaturday(date, override) {
+  if (isManualSkip(override)) return false;
+  return !isFourthSaturday(date) || override?.kind === "assignment";
+}
+
 function countConductingSaturdays(startDate, endDate, overrideMap) {
   let count = 0;
   for (
@@ -58,7 +63,7 @@ function countConductingSaturdays(startDate, endDate, overrideMap) {
     cursor = new Date(cursor.getTime() + 7 * DAY_MS)
   ) {
     const key = formatDateKey(cursor);
-    if (!isFourthSaturday(cursor) && !isManualSkip(overrideMap.get(key))) {
+    if (isConductingSaturday(cursor, overrideMap.get(key))) {
       count += 1;
     }
   }
@@ -69,17 +74,6 @@ export function getScheduleEntry(dateString, overrides = []) {
   const date = assertSaturday(dateString);
   const overrideMap = normalizeOverrides(overrides);
   const override = overrideMap.get(dateString);
-
-  if (isFourthSaturday(date)) {
-    return {
-      date: dateString,
-      kind: "skip",
-      reason: "kingdom_hall",
-      label: SKIP_REASONS.kingdom_hall,
-      note: override?.note ?? "",
-      source: "rule",
-    };
-  }
 
   if (isManualSkip(override)) {
     const reason = override.reason ?? "other";
@@ -105,6 +99,17 @@ export function getScheduleEntry(dateString, overrides = []) {
       (ANCHOR_INDEX + conductingOffset + PARTICIPANTS.length * 10000) %
         PARTICIPANTS.length
     ];
+
+  if (override?.kind !== "assignment" && isFourthSaturday(date)) {
+    return {
+      date: dateString,
+      kind: "skip",
+      reason: "kingdom_hall",
+      label: SKIP_REASONS.kingdom_hall,
+      note: "",
+      source: "rule",
+    };
+  }
 
   return {
     date: dateString,
@@ -162,4 +167,3 @@ export function buildSchedule(startDateString, endDateString, overrides = []) {
   }
   return entries;
 }
-

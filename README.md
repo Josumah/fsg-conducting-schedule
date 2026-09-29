@@ -7,6 +7,8 @@ A responsive shared calendar for the Saturday field service conducting rotation.
 - Rotation: **James → Les → Harlan → JP → Isaac**
 - Anchor: **JP on Saturday, October 3, 2026**
 - The fourth Saturday of every month is **Kingdom Hall — No conducting**.
+- Editors can override a fourth Saturday with an assignment or another no-conducting reason.
+- A fourth-Saturday assignment consumes a normal turn and advances the rotation; restoring the default returns it to a paused Kingdom Hall date.
 - Convention, assembly, CO-visit, and other special-event Saturdays can be tagged manually.
 - Every no-conducting Saturday pauses the rotation and does not consume a turn.
 - Assignment overrides change only the selected date. The underlying rotation continues unchanged.

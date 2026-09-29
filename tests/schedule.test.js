@@ -60,6 +60,39 @@ test("assignment overrides do not alter later rotation positions", () => {
   assert.equal(getScheduleEntry("2026-10-17", overrides).person, "James");
 });
 
+test("an assignment on a fourth Saturday consumes a rotation turn", () => {
+  const overrides = [
+    {
+      date: "2026-10-24",
+      kind: "assignment",
+      person: "James",
+      note: "Kingdom Hall schedule changed",
+    },
+  ];
+
+  const fourthSaturday = getScheduleEntry("2026-10-24", overrides);
+  assert.equal(fourthSaturday.kind, "assignment");
+  assert.equal(fourthSaturday.person, "James");
+  assert.equal(fourthSaturday.calculatedPerson, "Les");
+  assert.equal(getScheduleEntry("2026-10-31", overrides).person, "Harlan");
+});
+
+test("a fourth Saturday can use another no-conducting reason", () => {
+  const overrides = [
+    {
+      date: "2026-10-24",
+      kind: "skip",
+      reason: "assembly",
+      note: "Circuit assembly",
+    },
+  ];
+
+  const fourthSaturday = getScheduleEntry("2026-10-24", overrides);
+  assert.equal(fourthSaturday.kind, "skip");
+  assert.equal(fourthSaturday.label, "Assembly");
+  assert.equal(getScheduleEntry("2026-10-31", overrides).person, "Les");
+});
+
 test("removing a manual skip restores the default downstream rotation", () => {
   const overrides = [
     { date: "2026-10-10", kind: "skip", reason: "co_visit", note: "" },
