@@ -1,5 +1,4 @@
 import { SCHEDULE_API_URL } from "./config.js?v=4";
-import { createCalendarIcs } from "./ics.js?v=4";
 import {
   PARTICIPANTS,
   SKIP_REASONS,
@@ -347,17 +346,6 @@ async function handleReset() {
   }
 }
 
-function downloadCalendar() {
-  const contents = createCalendarIcs(todayKey(), overrides);
-  const blob = new Blob([contents], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "fsg-conducting-schedule.ics";
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-
 function changeMonth(offset) {
   visibleMonth = new Date(
     Date.UTC(visibleMonth.getUTCFullYear(), visibleMonth.getUTCMonth() + offset, 1),
@@ -382,7 +370,6 @@ async function init() {
     visibleMonth = new Date(Date.UTC(today.getFullYear(), today.getMonth(), 1));
     renderCalendar();
   });
-  document.querySelector("#download-calendar").addEventListener("click", downloadCalendar);
   elements.editForm.addEventListener("change", updateEditorFields);
   elements.editForm.addEventListener("submit", handleSave);
   elements.resetDate.addEventListener("click", handleReset);

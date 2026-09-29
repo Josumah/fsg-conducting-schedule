@@ -114,11 +114,6 @@ h2 {
   font-weight: 750;
 }
 
-.button-secondary {
-  color: var(--forest-dark);
-  background: white;
-}
-
 .button-primary {
   color: white;
   background: var(--forest);
@@ -549,10 +544,6 @@ input:not([type]) {
   .header-actions {
     width: 100%;
     justify-items: stretch;
-  }
-
-  .header-actions .button {
-    width: 100%;
   }
 
   .next-card {

@@ -21,7 +21,6 @@ A responsive shared calendar for the Saturday field service conducting rotation.
 - Shared schedule exceptions backed by a Google Sheet
 - Automatic, permanent change log with a public Recent Changes view
 - Public read-only page and separate private editor link
-- 12-month iCalendar (`.ics`) download
 - No framework or frontend build step
 
 ## Run locally
@@ -84,9 +83,3 @@ The repository is intended to publish directly from the root of the `main` branc
 3. Save and wait for the Pages deployment to complete.
 
 The live URL will be <https://josumah.github.io/fsg-conducting-schedule/>.
-
-## Calendar download
-
-The download button generates a one-time calendar file covering the next 12 months. It includes assignments, fourth-Saturday Kingdom Hall dates, and all currently loaded shared exceptions.
-
-Because it is a downloaded snapshot, future shared edits do not update an already imported calendar automatically. Download a fresh copy after significant schedule changes.
