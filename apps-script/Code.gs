@@ -187,18 +187,18 @@ function getScheduleSheet() {
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
     sheet.setFrozenRows(1);
   }
+  return sheet;
+}
 
-  function getChangeLogSheet() {
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = spreadsheet.getSheetByName(CHANGE_LOG_SHEET_NAME);
-    if (!sheet) {
-      sheet = spreadsheet.insertSheet(CHANGE_LOG_SHEET_NAME);
-      sheet
-        .getRange(1, 1, 1, CHANGE_LOG_HEADERS.length)
-        .setValues([CHANGE_LOG_HEADERS]);
-      sheet.setFrozenRows(1);
-    }
-    return sheet;
+function getChangeLogSheet() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = spreadsheet.getSheetByName(CHANGE_LOG_SHEET_NAME);
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(CHANGE_LOG_SHEET_NAME);
+    sheet
+      .getRange(1, 1, 1, CHANGE_LOG_HEADERS.length)
+      .setValues([CHANGE_LOG_HEADERS]);
+    sheet.setFrozenRows(1);
   }
   return sheet;
 }
