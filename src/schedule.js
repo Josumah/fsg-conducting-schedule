@@ -167,3 +167,31 @@ export function buildSchedule(startDateString, endDateString, overrides = []) {
   }
   return entries;
 }
+
+export function describeScheduleChange(before, after, dateLabel, isReset = false) {
+  if (isReset) {
+    const restored =
+      after.kind === "assignment" ? after.person : `No conducting — ${after.label}`;
+    return `Restored ${dateLabel} to the default: ${restored}.`;
+  }
+
+  if (before.kind === "assignment" && after.kind === "assignment") {
+    if (before.person === after.person) {
+      return `Updated ${before.person}'s schedule details for ${dateLabel}.`;
+    }
+    return `${before.person} switched with ${after.person} on ${dateLabel}.`;
+  }
+
+  if (before.kind === "assignment" && after.kind === "skip") {
+    return `${before.person}'s conducting day changed to ${after.label} on ${dateLabel}.`;
+  }
+
+  if (before.kind === "skip" && after.kind === "assignment") {
+    return `${before.label} changed to ${after.person} conducting on ${dateLabel}.`;
+  }
+
+  if (before.label === after.label) {
+    return `Updated the ${before.label} details for ${dateLabel}.`;
+  }
+  return `No-conducting reason changed from ${before.label} to ${after.label} on ${dateLabel}.`;
+}

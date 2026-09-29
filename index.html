@@ -76,6 +76,17 @@
           <li><span class="dot dot-skip"></span>No conducting</li>
         </ul>
       </section>
+
+      <section class="changes-card" aria-labelledby="changes-heading">
+        <div class="changes-heading">
+          <div>
+            <p class="eyebrow">Schedule history</p>
+            <h2 id="changes-heading">Recent changes</h2>
+          </div>
+          <p>Saved automatically when the shared schedule is edited.</p>
+        </div>
+        <ol id="changes-list" class="changes-list"></ol>
+      </section>
     </main>
 
     <dialog id="edit-dialog">
@@ -93,11 +104,11 @@
           <legend>What should happen?</legend>
           <label>
             <input type="radio" name="kind" value="assignment" checked />
-            Assign a conductor
+            Conducting assignment
           </label>
           <label>
             <input type="radio" name="kind" value="skip" />
-            Mark no conducting
+            No conducting / special event
           </label>
         </fieldset>
 
@@ -118,7 +129,7 @@
         </label>
 
         <label>
-          Note <span class="optional">(optional)</span>
+          Explanation or note <span class="optional">(optional)</span>
           <input id="edit-note" name="note" maxlength="160" />
         </label>
 
@@ -136,6 +147,6 @@
       <p>Schedule begins with JP on October 3, 2026.</p>
     </footer>
 
-    <script type="module" src="./src/app.js?v=3"></script>
+    <script type="module" src="./src/app.js?v=4"></script>
   </body>
 </html>

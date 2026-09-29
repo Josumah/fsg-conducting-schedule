@@ -1,4 +1,4 @@
-import { buildSchedule, parseDate } from "./schedule.js?v=3";
+import { buildSchedule, parseDate } from "./schedule.js?v=4";
 
 function addMonths(date, months) {
   const result = new Date(date);

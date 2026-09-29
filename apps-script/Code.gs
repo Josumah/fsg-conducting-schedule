@@ -1,5 +1,14 @@
 const SHEET_NAME = "Schedule Overrides";
 const HEADERS = ["Date", "Kind", "Person", "Reason", "Note", "UpdatedAt"];
+const CHANGE_LOG_SHEET_NAME = "Change Log";
+const CHANGE_LOG_HEADERS = [
+  "ChangeId",
+  "Timestamp",
+  "ScheduleDate",
+  "Description",
+  "Explanation",
+  "Action",
+];
 const PARTICIPANTS = new Set(["James", "Les", "Harlan", "JP", "Isaac"]);
 const REASONS = new Set([
   "kingdom_hall",
@@ -11,8 +20,13 @@ const REASONS = new Set([
 
 function doGet(event) {
   try {
+    const result = {
+      ok: true,
+      overrides: readOverrides(),
+      changes: readChanges(),
+    };
     return jsonResponse(
-      { ok: true, overrides: readOverrides() },
+      result,
       event && event.parameter && event.parameter.callback,
     );
   } catch (error) {
@@ -28,6 +42,7 @@ function doPost(event) {
     const payload = JSON.parse(event.postData.contents);
     validateEditorToken(payload.editorToken);
     validateDate(payload.date);
+    validateChangeLogPayload(payload);
 
     const lock = LockService.getScriptLock();
     lock.waitLock(10000);
@@ -39,6 +54,7 @@ function doPost(event) {
       } else {
         throw new Error("Unsupported action");
       }
+      appendChangeLog(payload);
     } finally {
       lock.releaseLock();
     }
@@ -67,6 +83,26 @@ function readOverrides() {
       updatedAt,
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function readChanges() {
+  const sheet = getChangeLogSheet();
+  const rowCount = sheet.getLastRow();
+  if (rowCount < 2) return [];
+  const startRow = Math.max(2, rowCount - 19);
+  return sheet
+    .getRange(startRow, 1, rowCount - startRow + 1, CHANGE_LOG_HEADERS.length)
+    .getDisplayValues()
+    .filter((row) => row[0])
+    .map(([id, timestamp, date, description, explanation, action]) => ({
+      id,
+      timestamp,
+      date,
+      description,
+      explanation,
+      action,
+    }))
+    .reverse();
 }
 
 function saveOverride(payload) {
@@ -112,6 +148,29 @@ function deleteOverride(date) {
   if (row) sheet.deleteRow(row);
 }
 
+function appendChangeLog(payload) {
+  getChangeLogSheet().appendRow([
+    payload.changeId,
+    new Date().toISOString(),
+    payload.date,
+    payload.description.trim(),
+    payload.explanation.trim(),
+    payload.action,
+  ]);
+}
+
+function validateChangeLogPayload(payload) {
+  const changeId = String(payload.changeId || "");
+  const description = String(payload.description || "").trim();
+  const explanation = String(payload.explanation || "").trim();
+  if (!/^[0-9a-f-]{36}$/i.test(changeId)) {
+    throw new Error("Change ID is invalid");
+  }
+  if (!description || description.length > 240 || explanation.length > 160) {
+    throw new Error("Change description or explanation is invalid");
+  }
+}
+
 function findDateRow(sheet, date) {
   const rowCount = sheet.getLastRow();
   if (rowCount < 2) return null;
@@ -127,6 +186,19 @@ function getScheduleSheet() {
     sheet = spreadsheet.insertSheet(SHEET_NAME);
     sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
     sheet.setFrozenRows(1);
+  }
+
+  function getChangeLogSheet() {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = spreadsheet.getSheetByName(CHANGE_LOG_SHEET_NAME);
+    if (!sheet) {
+      sheet = spreadsheet.insertSheet(CHANGE_LOG_SHEET_NAME);
+      sheet
+        .getRange(1, 1, 1, CHANGE_LOG_HEADERS.length)
+        .setValues([CHANGE_LOG_HEADERS]);
+      sheet.setFrozenRows(1);
+    }
+    return sheet;
   }
   return sheet;
 }

@@ -12,12 +12,14 @@ A responsive shared calendar for the Saturday field service conducting rotation.
 - Convention, assembly, CO-visit, and other special-event Saturdays can be tagged manually.
 - Every no-conducting Saturday pauses the rotation and does not consume a turn.
 - Assignment overrides change only the selected date. The underlying rotation continues unchanged.
+- Each edit is documented automatically, for example: `Les switched with Harlan on October 31, 2026.`
 
 ## Features
 
 - Responsive month calendar and mobile agenda
 - Prominent next-assignment card
 - Shared schedule exceptions backed by a Google Sheet
+- Automatic, permanent change log with a public Recent Changes view
 - Public read-only page and separate private editor link
 - 12-month iCalendar (`.ics`) download
 - No framework or frontend build step
@@ -64,7 +66,7 @@ The app removes the editor token from the address bar after loading and keeps it
 
 ## Data model and security
 
-The Apps Script web app stores schedule exceptions in a `Schedule Overrides` tab that it creates automatically. Public visitors read the effective schedule through JSONP, avoiding Apps Script's cross-origin redirect limitations. Editor writes use a no-CORS post and are confirmed by re-reading the sheet before the UI reports success. Changes require the private editor token, and Apps Script validates:
+The Apps Script web app stores schedule exceptions in a `Schedule Overrides` tab and an append-only audit trail in a `Change Log` tab. The site shows the 20 most recent log entries. Public visitors read the effective schedule and recent changes through JSONP, avoiding Apps Script's cross-origin redirect limitations. Editor writes use a no-CORS post and are confirmed by re-reading both the override and its change-log entry before the UI reports success. Changes require the private editor token, and Apps Script validates:
 
 - Saturday-only dates
 - Known participant names

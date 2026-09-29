@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  describeScheduleChange,
   getNextAssignment,
   getScheduleEntry,
   getSaturdaysInMonth,
@@ -115,4 +116,35 @@ test("lists every Saturday in a month", () => {
     "2026-10-24",
     "2026-10-31",
   ]);
+});
+
+test("describes assignment switches and special-event changes", () => {
+  assert.equal(
+    describeScheduleChange(
+      { kind: "assignment", person: "Les" },
+      { kind: "assignment", person: "Harlan" },
+      "October 31, 2026",
+    ),
+    "Les switched with Harlan on October 31, 2026.",
+  );
+  assert.equal(
+    describeScheduleChange(
+      { kind: "assignment", person: "Isaac" },
+      { kind: "skip", label: "Assembly" },
+      "October 10, 2026",
+    ),
+    "Isaac's conducting day changed to Assembly on October 10, 2026.",
+  );
+});
+
+test("describes restoring a date to its default", () => {
+  assert.equal(
+    describeScheduleChange(
+      { kind: "assignment", person: "Harlan" },
+      { kind: "skip", label: "Kingdom Hall" },
+      "October 24, 2026",
+      true,
+    ),
+    "Restored October 24, 2026 to the default: No conducting — Kingdom Hall.",
+  );
 });

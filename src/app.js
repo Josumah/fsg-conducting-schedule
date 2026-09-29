@@ -1,14 +1,15 @@
-import { SCHEDULE_API_URL } from "./config.js?v=3";
-import { createCalendarIcs } from "./ics.js?v=3";
+import { SCHEDULE_API_URL } from "./config.js?v=4";
+import { createCalendarIcs } from "./ics.js?v=4";
 import {
   PARTICIPANTS,
   SKIP_REASONS,
+  describeScheduleChange,
   formatDateKey,
   getNextAssignment,
   getSaturdaysInMonth,
   getScheduleEntry,
   parseDate,
-} from "./schedule.js?v=3";
+} from "./schedule.js?v=4";
 
 const elements = {
   calendarGrid: document.querySelector("#calendar-grid"),
@@ -28,6 +29,7 @@ const elements = {
   personField: document.querySelector("#person-field"),
   reasonField: document.querySelector("#reason-field"),
   resetDate: document.querySelector("#reset-date"),
+  changesList: document.querySelector("#changes-list"),
 };
 
 const monthFormatter = new Intl.DateTimeFormat("en-US", {
@@ -50,6 +52,7 @@ const shortMonthFormatter = new Intl.DateTimeFormat("en-US", {
 let visibleMonth = new Date();
 visibleMonth = new Date(Date.UTC(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1));
 let overrides = [];
+let recentChanges = [];
 let editorToken = "";
 
 function todayKey() {
@@ -98,11 +101,42 @@ async function loadOverrides() {
     note: item.note ?? "",
     updatedAt: item.updatedAt,
   }));
+  recentChanges = Array.isArray(result.changes) ? result.changes : [];
+  renderRecentChanges();
   setStatus(
     overrides.length
       ? `Shared schedule loaded with ${overrides.length} update${overrides.length === 1 ? "" : "s"}.`
       : "Shared schedule is up to date.",
   );
+}
+
+function renderRecentChanges() {
+  elements.changesList.replaceChildren();
+  if (!recentChanges.length) {
+    const empty = document.createElement("li");
+    empty.className = "changes-empty";
+    empty.textContent = "No schedule changes have been recorded yet.";
+    elements.changesList.append(empty);
+    return;
+  }
+
+  for (const change of recentChanges) {
+    const item = document.createElement("li");
+    item.className = "change-item";
+    const timestamp = new Date(change.timestamp);
+    const timeLabel = Number.isNaN(timestamp.getTime())
+      ? change.timestamp
+      : timestamp.toLocaleString([], {
+          dateStyle: "medium",
+          timeStyle: "short",
+        });
+    item.innerHTML = `
+      <p>${escapeHtml(change.description)}</p>
+      ${change.explanation ? `<span>${escapeHtml(change.explanation)}</span>` : ""}
+      <time datetime="${escapeHtml(change.timestamp)}">${escapeHtml(timeLabel)}</time>
+    `;
+    elements.changesList.append(item);
+  }
 }
 
 function loadScheduleJsonp() {
@@ -238,6 +272,19 @@ async function handleSave(event) {
     reason: formData.get("kind") === "skip" ? formData.get("reason") : null,
     note: String(formData.get("note") || "").trim(),
   };
+  const before = getScheduleEntry(payload.date, overrides);
+  const candidateOverrides = [
+    ...overrides.filter((item) => item.date !== payload.date),
+    payload,
+  ];
+  const after = getScheduleEntry(payload.date, candidateOverrides);
+  payload.changeId = crypto.randomUUID();
+  payload.description = describeScheduleChange(
+    before,
+    after,
+    longDateFormatter.format(parseDate(payload.date)).replace(/^Saturday, /, ""),
+  );
+  payload.explanation = payload.note;
 
   try {
     await saveOverride(payload);
@@ -252,6 +299,9 @@ async function handleSave(event) {
     ) {
       throw new Error("The shared schedule did not confirm this change.");
     }
+    if (!recentChanges.some((change) => change.id === payload.changeId)) {
+      throw new Error("The change log did not confirm this update.");
+    }
     renderCalendar();
     elements.dialog.close();
   } catch (error) {
@@ -261,11 +311,34 @@ async function handleSave(event) {
 
 async function handleReset() {
   elements.editError.textContent = "";
+  const date = elements.editDate.value;
+  const before = getScheduleEntry(date, overrides);
+  const after = getScheduleEntry(
+    date,
+    overrides.filter((item) => item.date !== date),
+  );
+  const changeId = crypto.randomUUID();
   try {
-    await saveOverride({ date: elements.editDate.value }, "delete");
+    await saveOverride(
+      {
+        date,
+        changeId,
+        description: describeScheduleChange(
+          before,
+          after,
+          longDateFormatter.format(parseDate(date)).replace(/^Saturday, /, ""),
+          true,
+        ),
+        explanation: "",
+      },
+      "delete",
+    );
     await loadOverrides();
-    if (overrides.some((item) => item.date === elements.editDate.value)) {
+    if (overrides.some((item) => item.date === date)) {
       throw new Error("The shared schedule did not confirm the reset.");
+    }
+    if (!recentChanges.some((change) => change.id === changeId)) {
+      throw new Error("The change log did not confirm the reset.");
     }
     renderCalendar();
     elements.dialog.close();
@@ -314,6 +387,7 @@ async function init() {
   elements.editForm.addEventListener("submit", handleSave);
   elements.resetDate.addEventListener("click", handleReset);
 
+  renderRecentChanges();
   try {
     await loadOverrides();
   } catch (error) {
