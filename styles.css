@@ -52,8 +52,7 @@ button:disabled {
 }
 
 .header-inner,
-.layout,
-footer {
+.layout {
   width: min(1120px, calc(100% - 32px));
   margin-inline: auto;
 }
@@ -540,13 +539,6 @@ input:not([type]) {
   gap: 12px;
 }
 
-footer {
-  padding: 14px 0 34px;
-  color: var(--muted);
-  font-size: 0.84rem;
-  text-align: center;
-}
-
 @media (max-width: 720px) {
   .header-inner {
     align-items: start;
@@ -622,8 +614,7 @@ footer {
   .site-header,
   .header-actions,
   .calendar-toolbar button,
-  .status,
-  footer {
+  .status {
     display: none;
   }
 
