@@ -1,5 +1,5 @@
-import { SCHEDULE_API_URL } from "./config.js";
-import { createCalendarIcs } from "./ics.js";
+import { SCHEDULE_API_URL } from "./config.js?v=2";
+import { createCalendarIcs } from "./ics.js?v=2";
 import {
   PARTICIPANTS,
   SKIP_REASONS,
@@ -8,7 +8,7 @@ import {
   getSaturdaysInMonth,
   getScheduleEntry,
   parseDate,
-} from "./schedule.js";
+} from "./schedule.js?v=2";
 
 const elements = {
   calendarGrid: document.querySelector("#calendar-grid"),

@@ -1,4 +1,4 @@
-import { buildSchedule, parseDate } from "./schedule.js";
+import { buildSchedule, parseDate } from "./schedule.js?v=2";
 
 function addMonths(date, months) {
   const result = new Date(date);
@@ -82,4 +82,3 @@ export function createCalendarIcs(
   lines.push("END:VCALENDAR");
   return `${lines.join("\r\n")}\r\n`;
 }
-
