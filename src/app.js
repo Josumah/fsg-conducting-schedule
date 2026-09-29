@@ -12,7 +12,6 @@ import {
 
 const elements = {
   calendarGrid: document.querySelector("#calendar-grid"),
-  mobileAgenda: document.querySelector("#mobile-agenda"),
   monthHeading: document.querySelector("#month-heading"),
   nextPerson: document.querySelector("#next-person"),
   nextDate: document.querySelector("#next-date"),
@@ -138,56 +137,20 @@ function renderCalendar() {
   const month = visibleMonth.getUTCMonth();
   elements.monthHeading.textContent = monthFormatter.format(visibleMonth);
   elements.calendarGrid.replaceChildren();
-  elements.mobileAgenda.replaceChildren();
-
-  const firstDay = new Date(Date.UTC(year, month, 1)).getUTCDay();
-  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-  for (let index = 0; index < firstDay; index += 1) {
-    const empty = document.createElement("div");
-    empty.className = "calendar-day empty";
-    empty.setAttribute("aria-hidden", "true");
-    elements.calendarGrid.append(empty);
-  }
-
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const date = new Date(Date.UTC(year, month, day));
-    const dateKey = formatDateKey(date);
-    const isScheduleDay = date.getUTCDay() === 6;
-    const entry = isScheduleDay ? getScheduleEntry(dateKey, overrides) : null;
-    const canEdit = Boolean(editorToken && entry && entry.reason !== "kingdom_hall");
-    const cell = document.createElement(canEdit ? "button" : "div");
-    cell.className = "calendar-day";
-    if (dateKey === todayKey()) cell.classList.add("today");
-    cell.innerHTML = `<span class="day-number">${day}</span>`;
-
-    if (entry) {
-      cell.innerHTML += entryMarkup(entry);
-      cell.setAttribute(
-        "aria-label",
-        `${longDateFormatter.format(date)}: ${
-          entry.kind === "assignment" ? entry.person : `No conducting, ${entry.label}`
-        }${canEdit ? ". Edit schedule." : ""}`,
-      );
-      if (canEdit) {
-        cell.type = "button";
-        cell.classList.add("editable");
-        cell.addEventListener("click", () => openEditor(dateKey));
-      }
-    }
-    elements.calendarGrid.append(cell);
-  }
 
   for (const dateKey of getSaturdaysInMonth(year, month)) {
     const entry = getScheduleEntry(dateKey, overrides);
     const date = parseDate(dateKey);
     const canEdit = editorToken && entry.reason !== "kingdom_hall";
     const item = document.createElement("li");
-    item.className = "agenda-item";
+    item.className = "saturday-item";
+    if (dateKey === todayKey()) item.classList.add("today");
     item.innerHTML = `
-      <time class="agenda-date" datetime="${dateKey}">
-        ${shortMonthFormatter.format(date)}<strong>${date.getUTCDate()}</strong>
+      <time class="saturday-date" datetime="${dateKey}">
+        <span>${shortMonthFormatter.format(date)}</span>
+        <strong>${date.getUTCDate()}</strong>
       </time>
-      <button class="agenda-edit" type="button" ${canEdit ? "" : "disabled"}>
+      <button class="saturday-details" type="button" ${canEdit ? "" : "disabled"}>
         ${entryMarkup(entry)}
       </button>
     `;
@@ -197,7 +160,7 @@ function renderCalendar() {
     } else {
       button.removeAttribute("tabindex");
     }
-    elements.mobileAgenda.append(item);
+    elements.calendarGrid.append(item);
   }
 
   const next = getNextAssignment(todayKey(), overrides);
