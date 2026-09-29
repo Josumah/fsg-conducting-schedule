@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Shared Saturday field service conducting schedule for FSG #1 and #2."
+    />
+    <title>FSG #1 &amp; #2 Conducting Schedule</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div>
+          <p class="eyebrow">Saturday field service</p>
+          <h1>FSG #1 &amp; #2<br />Conducting Schedule</h1>
+          <p class="subtitle">
+            A shared rotation for James, Les, Harlan, JP, and Isaac.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button id="download-calendar" class="button button-secondary" type="button">
+            Download 12-month calendar
+          </button>
+          <span id="editor-badge" class="editor-badge" hidden>Editor mode</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="next-card" aria-labelledby="next-heading">
+        <div>
+          <p class="eyebrow">Up next</p>
+          <h2 id="next-heading"><span id="next-person">Loading…</span></h2>
+          <p id="next-date" class="next-date"></p>
+        </div>
+        <div class="next-mark" aria-hidden="true">→</div>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <section class="calendar-card" aria-labelledby="month-heading">
+        <div class="calendar-toolbar">
+          <button id="previous-month" class="icon-button" type="button" aria-label="Previous month">
+            ‹
+          </button>
+          <div>
+            <h2 id="month-heading"></h2>
+            <button id="today" class="text-button" type="button">Today</button>
+          </div>
+          <button id="next-month" class="icon-button" type="button" aria-label="Next month">
+            ›
+          </button>
+        </div>
+
+        <div class="weekday-row" aria-hidden="true">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+          <span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div id="calendar-grid" class="calendar-grid"></div>
+        <ol id="mobile-agenda" class="mobile-agenda"></ol>
+      </section>
+
+      <section class="legend-card" aria-labelledby="legend-heading">
+        <div>
+          <p class="eyebrow">Rotation</p>
+          <h2 id="legend-heading">James → Les → Harlan → JP → Isaac</h2>
+          <p>
+            Fourth Saturdays and tagged special events pause the rotation. The next
+            person keeps their place.
+          </p>
+        </div>
+        <ul class="legend" aria-label="Calendar color legend">
+          <li><span class="dot dot-james"></span>James</li>
+          <li><span class="dot dot-les"></span>Les</li>
+          <li><span class="dot dot-harlan"></span>Harlan</li>
+          <li><span class="dot dot-jp"></span>JP</li>
+          <li><span class="dot dot-isaac"></span>Isaac</li>
+          <li><span class="dot dot-skip"></span>No conducting</li>
+        </ul>
+      </section>
+    </main>
+
+    <dialog id="edit-dialog">
+      <form id="edit-form" method="dialog">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Edit schedule</p>
+            <h2 id="edit-date-heading"></h2>
+          </div>
+          <button class="icon-button close-button" value="cancel" aria-label="Close editor">×</button>
+        </div>
+
+        <input id="edit-date" name="date" type="hidden" />
+        <fieldset>
+          <legend>What should happen?</legend>
+          <label>
+            <input type="radio" name="kind" value="assignment" checked />
+            Assign a conductor
+          </label>
+          <label>
+            <input type="radio" name="kind" value="skip" />
+            Mark no conducting
+          </label>
+        </fieldset>
+
+        <label id="person-field">
+          Person
+          <select id="edit-person" name="person"></select>
+        </label>
+
+        <label id="reason-field" hidden>
+          Reason
+          <select id="edit-reason" name="reason">
+            <option value="convention">Convention</option>
+            <option value="assembly">Assembly</option>
+            <option value="co_visit">CO Visit</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+
+        <label>
+          Note <span class="optional">(optional)</span>
+          <input id="edit-note" name="note" maxlength="160" />
+        </label>
+
+        <p id="edit-error" class="form-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button id="reset-date" class="button button-danger" type="button">
+            Restore default
+          </button>
+          <button class="button button-primary" type="submit">Save change</button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer>
+      <p>Schedule begins with JP on October 3, 2026.</p>
+    </footer>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
+
